@@ -1,6 +1,7 @@
 import functools
 import hashlib
 import json
+from collections import OrderedDict
 
 # Reward to Miners (For Creating a New Block)
 MINING_REWARD = 10
@@ -42,7 +43,9 @@ def hash_block(block):
     # For now, this is only getting the values by the keys in each block and join them with a '-'
     # return '-'.join([str(block[key]) for key in block])
 
-    return hashlib.sha256(json.dumps(block).encode()).hexdigest()
+    # The 'sort_keys' here is to make sure the order for the hash is always the same, prevent hashing error (same input)
+    return hashlib.sha256(json.dumps(block,
+                                     sort_keys=True).encode()).hexdigest()
 
 
 def valid_proof(transcations, last_hash, proof):
@@ -166,23 +169,33 @@ def mine_block():
 
     proof = proof_of_work()
 
-    reward_transaction = {
-        'sender': "MINING",
-        'recipient': owner,
-        'amount': MINING_REWARD,
-    }
+    # We need to make sure the hash always has the same order for the data to prevent hashing error
+    # reward_transaction = {
+    #     'sender': "MINING",
+    #     'recipient': owner,
+    #     'amount': MINING_REWARD,
+    # }
+
+    reward_transaction = OrderedDict([('sender', 'MINING'),
+                                      ('recipient', owner),
+                                      ('amount', MINING_REWARD)])
 
     # Create a NEW copy of the transaction instead of manipulating the original open_transaction list
     # To ensure that if the mining is failed by some reasons, we won't reward transaction stored in the open transactions
     copied_transactions = open_transactions[:]
     copied_transactions.append(reward_transaction)
 
-    block = {
-        'previous_hash': hashed_block,
-        'index': len(blockchain),
-        'transactions': copied_transactions,
-        'proof': proof
-    }
+    # block = {
+    #     'previous_hash': hashed_block,
+    #     'index': len(blockchain),
+    #     'transactions': copied_transactions,
+    #     'proof': proof
+    # }
+
+    block = OrderedDict([('prevoius_hash', hashed_block),
+                         ('index', len(blockchain)),
+                         ('transaction', copied_transactions),
+                         ('proof', proof)])
 
     blockchain.append(block)
 
