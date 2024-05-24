@@ -1,7 +1,8 @@
 import functools
 import hashlib
-import json
 from collections import OrderedDict
+
+from hash_util import hash_string_256, hash_block
 
 # Reward to Miners (For Creating a New Block)
 MINING_REWARD = 10
@@ -27,30 +28,9 @@ owner = "Sam"
 participants = {'Sam'}
 
 
-def hash_block(block):
-    """
-    Hashes a block and returns a string (hashed / encrypted).
-
-    Arguments:
-        :block: The block that should be hashed.
-
-    Functions:
-        :hashlib.sha256(): Creates a SHA-256 hash object
-        :json.dumps(): Converts a Python object into a JSON-formatted string
-        :encode(): Encodes the JSON-formatted string into bytes (because SHA-256 hashing function requires a bytes-like object, but not string)
-        :hexdigest(): Returns a hexadecimal string (readable)
-    """
-    # For now, this is only getting the values by the keys in each block and join them with a '-'
-    # return '-'.join([str(block[key]) for key in block])
-
-    # The 'sort_keys' here is to make sure the order for the hash is always the same, prevent hashing error (same input)
-    return hashlib.sha256(json.dumps(block,
-                                     sort_keys=True).encode()).hexdigest()
-
-
 def valid_proof(transcations, last_hash, proof):
     guess = (str(transcations) + str(last_hash) + str(proof)).encode()
-    guess_hash = hashlib.sha256(guess).hexdigest()
+    guess_hash = hash_string_256(guess)
 
     # print(f'valid_proof(): {guess_hash}')
     # print(f'valid_proof(): {guess_hash[0:2]}')
@@ -139,6 +119,9 @@ def verify_transaction(transactiion):
     """
     sender_balance = get_balance(transactiion['sender'])
 
+    # print(f'verify_transcation::sender_balance:: {sender_balance}')
+    # print(f"verify_transcation::transcation_amount:: {transactiion['amount']}")
+
     return sender_balance >= transactiion['amount']
 
 
@@ -192,9 +175,9 @@ def mine_block():
     #     'proof': proof
     # }
 
-    block = OrderedDict([('prevoius_hash', hashed_block),
+    block = OrderedDict([('previous_hash', hashed_block),
                          ('index', len(blockchain)),
-                         ('transaction', copied_transactions),
+                         ('transactions', copied_transactions),
                          ('proof', proof)])
 
     blockchain.append(block)
