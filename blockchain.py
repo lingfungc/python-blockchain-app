@@ -1,4 +1,6 @@
 import functools
+import os
+import json
 from collections import OrderedDict
 
 from hash_util import hash_string_256, hash_block
@@ -27,18 +29,44 @@ owner = "Sam"
 participants = {'Sam'}
 
 
+def load_data():
+    """
+    Read the blockchain and open_transactions data from the 'blockchain.txt'.
+
+    We use 'readlines()' to get the data in a list format.
+
+    We need to use 'json.loads()' to make sure the json-string data is loaded as a Python object.
+
+    We need to us 'global' to let the function to know that these are global variables.
+
+    We execute this 'load_data()' right after we define this and at the begining of this Python file.
+    """
+    if os.path.exists('blockchain.txt'):
+        with open('blockchain.txt', mode='r') as f:
+            file_content = f.readlines()
+
+            global blockchain
+            blockchain = json.loads(file_content[0][:-1])
+
+            global open_transactions
+            open_transactions = json.loads(file_content[1])
+
+
+load_data()
+
+
 def save_data():
     """
     Save the blockchain data into a file (Always Overwrite).
 
     We call this 'save_data()' whenever we add a new transaction or mine a new block.
 
-    We need to write the data as a string but NOT a list.
+    We use 'json.dumps()' save the data as a json-string into the file.
     """
     with open('blockchain.txt', mode='w') as f:
-        f.write(str(blockchain))
+        f.write(json.dumps(blockchain))
         f.write('\n')
-        f.write(str(open_transactions))
+        f.write(json.dumps(open_transactions))
 
 
 def valid_proof(transcations, last_hash, proof):
