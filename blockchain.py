@@ -1,5 +1,4 @@
 import functools
-import hashlib
 from collections import OrderedDict
 
 from hash_util import hash_string_256, hash_block
@@ -26,6 +25,20 @@ owner = "Sam"
 
 # Data Type: Set (No Duplicates) - Registered Participants: Owner + Other People Involved in Sending + Receiving Coins
 participants = {'Sam'}
+
+
+def save_data():
+    """
+    Save the blockchain data into a file (Always Overwrite).
+
+    We call this 'save_data()' whenever we add a new transaction or mine a new block.
+
+    We need to write the data as a string but NOT a list.
+    """
+    with open('blockchain.txt', mode='w') as f:
+        f.write(str(blockchain))
+        f.write('\n')
+        f.write(str(open_transactions))
 
 
 def valid_proof(transcations, last_hash, proof):
@@ -140,6 +153,9 @@ def add_transaction(recipient, sender=owner, amount=1.0):
         open_transactions.append(transaction)
         participants.add(sender)
         participants.add(recipient)
+
+        save_data()
+
         return True
     return False
 
@@ -181,6 +197,8 @@ def mine_block():
                          ('proof', proof)])
 
     blockchain.append(block)
+
+    save_data()
 
     return True
 
