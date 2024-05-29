@@ -74,6 +74,17 @@ def load_data():
             global open_transactions
             open_transactions = json.loads(file_content[1])
 
+            updated_transactions = []
+
+            for tx in open_transactions:
+                updated_transaction = OrderedDict([('sender', tx['sender']),
+                                                   ('recipient',
+                                                    tx['recipient']),
+                                                   ('amount', tx['amount'])])
+                updated_transactions.append(updated_transaction)
+
+            open_transactions = updated_transactions
+
 
 load_data()
 
@@ -200,7 +211,8 @@ def add_transaction(recipient, sender=owner, amount=1.0):
         :recipient: The participant who is receiving the coins.
         :amount: The amount of the coins sent with the transaction (default value = 1.0)
     """
-    transaction = {'sender': sender, 'recipient': recipient, 'amount': amount}
+    transaction = OrderedDict([('sender', sender), ('recipient', recipient),
+                               ('amount', amount)])
 
     if verify_transaction(transaction):
         open_transactions.append(transaction)
