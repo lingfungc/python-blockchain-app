@@ -1,6 +1,7 @@
 import functools
 import os
 import json
+# import pickle
 from collections import OrderedDict
 
 from hash_util import hash_string_256, hash_block
@@ -85,6 +86,15 @@ def load_data():
 
             open_transactions = updated_transactions
 
+        # with open('blockchain.p', mode='rb') as f:
+        #     file_content = pickle.loads(f.read())
+
+        #     global blockchain
+        #     blockchain = json.loads(file_content['blockchain'])
+
+        #     global open_transactions
+        #     open_transactions = json.loads(file_content['open_transactions'])
+
 
 load_data()
 
@@ -95,7 +105,9 @@ def save_data():
 
     We call this 'save_data()' whenever we add a new transaction or mine a new block.
 
-    We use 'json.dumps()' save the data as a json-string into the file.
+    We use 'json.dumps()' to save the data as a json-string into the file.
+
+    We can also use 'pickle.dumps()' to save the data as a Binary data in the file.
 
     Note that we save_data in a 'OrderedDict' (only for transactions).
     """
@@ -103,6 +115,13 @@ def save_data():
         f.write(json.dumps(blockchain))
         f.write('\n')
         f.write(json.dumps(open_transactions))
+
+    # with open('blockchain.p', mode='wb') as f:
+    #     save_data = {
+    #         'blockchain': blockchain,
+    #         'open_transactions': open_transactions
+    #     }
+    #     f.write(pickle.dumps(save_data))
 
 
 def valid_proof(transcations, last_hash, proof):
