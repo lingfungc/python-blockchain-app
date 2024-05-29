@@ -39,6 +39,8 @@ def load_data():
 
     We need to us 'global' to let the function to know that these are global variables.
 
+    We need to handle 'OrderedDict' for the data and load the data as 'OrderedDict' (only for transactions).
+
     We execute this 'load_data()' right after we define this and at the begining of this Python file.
     """
     if os.path.exists('blockchain.txt'):
@@ -47,6 +49,27 @@ def load_data():
 
             global blockchain
             blockchain = json.loads(file_content[0][:-1])
+
+            updated_blockchain = []
+
+            for block in blockchain:
+                updated_block = {
+                    'previous_hash':
+                    block['previous_hash'],
+                    'index':
+                    block['index'],
+                    'proof':
+                    block['proof'],
+                    'transactions': [
+                        OrderedDict([('sender', tx['sender']),
+                                     ('recipient', tx['recipient']),
+                                     ('amount', tx['amount'])])
+                        for tx in block['transactions']
+                    ]
+                }
+                updated_blockchain.append(updated_block)
+
+            blockchain = updated_blockchain
 
             global open_transactions
             open_transactions = json.loads(file_content[1])
@@ -62,6 +85,8 @@ def save_data():
     We call this 'save_data()' whenever we add a new transaction or mine a new block.
 
     We use 'json.dumps()' save the data as a json-string into the file.
+
+    Note that we save_data in a 'OrderedDict' (only for transactions).
     """
     with open('blockchain.txt', mode='w') as f:
         f.write(json.dumps(blockchain))
@@ -226,8 +251,6 @@ def mine_block():
 
     blockchain.append(block)
 
-    save_data()
-
     return True
 
 
@@ -307,6 +330,7 @@ while waiting_for_user_input:
     elif user_choice == '2':
         if mine_block():
             open_transactions = []
+            save_data()
 
     elif user_choice == '3':
         print_blockchain_elements()
