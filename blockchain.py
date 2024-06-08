@@ -4,6 +4,7 @@ import json
 # import pickle
 from collections import OrderedDict
 
+from block import Block
 from hash_util import hash_string_256, hash_block
 
 # Reward to Miners (For Creating a New Block)
@@ -58,20 +59,32 @@ def load_data():
                 updated_blockchain = []
 
                 for block in blockchain:
-                    updated_block = {
-                        'previous_hash':
-                        block['previous_hash'],
-                        'index':
-                        block['index'],
-                        'proof':
-                        block['proof'],
-                        'transactions': [
-                            OrderedDict([('sender', tx['sender']),
-                                         ('recipient', tx['recipient']),
-                                         ('amount', tx['amount'])])
-                            for tx in block['transactions']
-                        ]
-                    }
+
+                    curr_transactions = [
+                        OrderedDict([('sender', tx['sender']),
+                                     ('recipient', tx['recipient']),
+                                     ('amount', tx['amount'])])
+                        for tx in block['transactions']
+                    ]
+                    updated_block = Block(block['index'],
+                                          block['previous_hash'],
+                                          curr_transactions, block['proof'])
+
+                    # updated_block = {
+                    #     'previous_hash':
+                    #     block['previous_hash'],
+                    #     'index':
+                    #     block['index'],
+                    #     'proof':
+                    #     block['proof'],
+                    #     'transactions': [
+                    #         OrderedDict([('sender', tx['sender']),
+                    #                      ('recipient', tx['recipient']),
+                    #                      ('amount', tx['amount'])])
+                    #         for tx in block['transactions']
+                    #     ]
+                    # }
+
                     updated_blockchain.append(updated_block)
 
                 blockchain = updated_blockchain
@@ -89,17 +102,19 @@ def load_data():
                     updated_transactions.append(updated_transaction)
 
                 open_transactions = updated_transactions
-    except IOError:
+    except (IOError, IndexError):
         # * Ww now handle the IOError (when file not found) by creating the genesis_block in the 'except' block
         # print("File not found!")
 
         # Pre-Built First Starting Block for the Blockchain
-        genesis_block = {
-            'previous_hash': '',
-            'index': 0,
-            'transactions': [],
-            'proof': 100
-        }
+        genesis_block = Block(0, '', [], 100, 0)
+
+        # genesis_block = {
+        #     'previous_hash': '',
+        #     'index': 0,
+        #     'transactions': [],
+        #     'proof': 100
+        # }
 
         # Initialising the Blockchain List
         blockchain = [genesis_block]
@@ -146,7 +161,7 @@ def save_data():
         #         'open_transactions': open_transactions
         #     }
         #     f.write(pickle.dumps(save_data))
-    except IOError:
+    except (IOError, IndexError):
         print("Failed to save the data!")
 
 
@@ -180,7 +195,7 @@ def get_balance(participant):
     """
     # Find all the transactions (amount of coins) for the transactions that the participant is the sender (sending out coins) in the Blockchain
     tx_sending = [[
-        tx['amount'] for tx in block['transactions']
+        tx['amount'] for tx in block.transactions
         if tx['sender'] == participant
     ] for block in blockchain]
 
@@ -208,7 +223,7 @@ def get_balance(participant):
 
     # We don't count the open transactions because the coins are NOT in the wallet yet
     tx_receiving = [[
-        tx['amount'] for tx in block['transactions']
+        tx['amount'] for tx in block.transactions
         if tx['recipient'] == participant
     ] for block in blockchain]
 
@@ -301,10 +316,12 @@ def mine_block():
     #     'proof': proof
     # }
 
-    block = OrderedDict([('previous_hash', hashed_block),
-                         ('index', len(blockchain)),
-                         ('transactions', copied_transactions),
-                         ('proof', proof)])
+    # block = OrderedDict([('previous_hash', hashed_block),
+    #                      ('index', len(blockchain)),
+    #                      ('transactions', copied_transactions),
+    #                      ('proof', proof)])
+
+    block = Block(len(blockchain), hashed_block, copied_transactions, proof)
 
     blockchain.append(block)
 
@@ -341,12 +358,12 @@ def verify_chain():
         if index == 0:
             continue
 
-        if block['previous_hash'] != hash_block(blockchain[index - 1]):
+        if block.previous_hash != hash_block(blockchain[index - 1]):
             return False
 
         # We use [:-1] on transcations to ignore the last transcation which is the 'mining' transaction
-        if not valid_proof(block['transactions'][:-1], block['previous_hash'],
-                           block['proof']):
+        if not valid_proof(block.transactions[:-1], block.previous_hash,
+                           block.proof):
             print('Proof of Work is invalid!')
             return False
 
@@ -367,7 +384,7 @@ while waiting_for_user_input:
     print('3: Output the blockchain blocks')
     print('4: Output participants')
     print('5: Check transaction validity')
-    print('h: Manipulate the chain')
+    # print('h: Manipulate the chain')
     print('q: Quit')
     print('\n')
 
@@ -402,19 +419,19 @@ while waiting_for_user_input:
             print('There are invalid transactions')
 
     # We do this action to check if we can verify the blockchain successfully when the user tries to manipulate one of the block
-    elif user_choice == 'h':
-        if len(blockchain) >= 1:
-            blockchain[0] = {
-                'previous_hash':
-                '',
-                'index':
-                0,
-                'transactions': [{
-                    'sender': 'Chris',
-                    'recipient': 'Sam',
-                    'amount': 100.0
-                }]
-            }
+    # elif user_choice == 'h':
+    #     if len(blockchain) >= 1:
+    #         blockchain[0] = {
+    #             'previous_hash':
+    #             '',
+    #             'index':
+    #             0,
+    #             'transactions': [{
+    #                 'sender': 'Chris',
+    #                 'recipient': 'Sam',
+    #                 'amount': 100.0
+    #             }]
+    #         }
 
     elif user_choice == 'q':
         waiting_for_user_input = False
