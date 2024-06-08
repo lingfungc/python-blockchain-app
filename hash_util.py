@@ -23,4 +23,11 @@ def hash_block(block):
     # return '-'.join([str(block[key]) for key in block])
 
     # The 'sort_keys' here is to make sure the order for the hash is always the same, prevent hashing error (same input)
-    return hash_string_256(json.dumps(block, sort_keys=True).encode())
+
+    # After implementing the Block class, we need to convert the Block instance into dictionary data type
+    # In order to get the 'json.dumps()' working for the Block instance
+
+    hashable_block = block.__dict__.copy()
+    return hash_string_256(json.dumps(hashable_block, sort_keys=True).encode())
+
+    # return hash_string_256(json.dumps(block, sort_keys=True).encode())
