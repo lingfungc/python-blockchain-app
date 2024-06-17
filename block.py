@@ -1,7 +1,9 @@
 from time import time
 
+from Printable import Printable
 
-class Block:
+
+class Block(Printable):
 
     def __init__(self,
                  index,
@@ -14,3 +16,6 @@ class Block:
         self.transactions = transactions
         self.proof = proof
         self.timestamp = time() if timestamp is None else timestamp
+
+    def __repr__(self):
+        return str(self.__dict__)

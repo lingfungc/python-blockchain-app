@@ -140,7 +140,7 @@ def load_data():
         # Open Transacations (Unhandled Transactions before Being Put into the Blockchain)
         open_transactions = []
     finally:
-        print(blockchain)
+        # print(blockchain)
         print("Clean up!")
 
         # with open('blockchain.p', mode='rb') as f:
