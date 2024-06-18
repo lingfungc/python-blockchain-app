@@ -16,43 +16,42 @@ class Verification:
 
         return guess_hash[0:2] == '00'
 
+    def verify_chain(self, blockchain):
+        """ Verify the current blockchain and returns True / False """
+        for (index, block) in enumerate(blockchain):
+            # print(f"The index of the block: {index}")
+            # print(f"The details of the block: {block}")
+            if index == 0:
+                continue
 
-def verify_chain(self, blockchain):
-    """ Verify the current blockchain and returns True / False """
-    for (index, block) in enumerate(blockchain):
-        # print(f"The index of the block: {index}")
-        # print(f"The details of the block: {block}")
-        if index == 0:
-            continue
+            if block.previous_hash != hash_block(blockchain[index - 1]):
+                return False
 
-        if block.previous_hash != hash_block(blockchain[index - 1]):
-            return False
+            # We use [:-1] on transcations to ignore the last transcation which is the 'mining' transaction
+            if not self.valid_proof(block.transactions[:-1],
+                                    block.previous_hash, block.proof):
+                print('Proof of Work is invalid!')
+                return False
 
-        # We use [:-1] on transcations to ignore the last transcation which is the 'mining' transaction
-        if not self.valid_proof(block.transactions[:-1], block.previous_hash,
-                                block.proof):
-            print('Proof of Work is invalid!')
-            return False
+            return True
 
-        return True
+    def verify_transaction(self, transactiion, get_balance):
+        """
+        Verify a transaction by checking whether the sender has enough / sufficient coins.
 
+        Arguments:
+            :transaction: The transaction that should be verified.
+        """
+        sender_balance = get_balance()
 
-def verify_transaction(self, transactiion, get_balance):
-    """
-    Verify a transaction by checking whether the sender has enough / sufficient coins.
+        # print(f'verify_transcation::sender_balance:: {sender_balance}')
+        # print(f"verify_transcation::transcation_amount:: {transactiion['amount']}")
 
-    Arguments:
-        :transaction: The transaction that should be verified.
-    """
-    sender_balance = get_balance()
+        return sender_balance >= transactiion.amount
 
-    # print(f'verify_transcation::sender_balance:: {sender_balance}')
-    # print(f"verify_transcation::transcation_amount:: {transactiion['amount']}")
-
-    return sender_balance >= transactiion.amount
-
-
-def verify_transactions(self, open_transactions, get_balance):
-    """ Verifies all the open transactions. """
-    return all(
-        [self.verify_transaction(tx, get_balance) for tx in open_transactions])
+    def verify_transactions(self, open_transactions, get_balance):
+        """ Verifies all the open transactions. """
+        return all([
+            self.verify_transaction(tx, get_balance)
+            for tx in open_transactions
+        ])
