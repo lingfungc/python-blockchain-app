@@ -1,6 +1,6 @@
 from time import time
 
-from Printable import Printable
+from printable import Printable
 
 
 class Block(Printable):

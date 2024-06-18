@@ -196,20 +196,6 @@ def save_data():
         print("Failed to save the data!")
 
 
-def valid_proof(transcations, last_hash, proof):
-    # Order in the Transactions is important here because we are going to do hashing
-    # guess = (str(transcations) + str(last_hash) + str(proof)).encode()
-    guess = (str([tx.to_ordered_dict() for tx in transcations]) +
-             str(last_hash) + str(proof)).encode()
-
-    guess_hash = hash_string_256(guess)
-
-    # print(f'valid_proof(): {guess_hash}')
-    # print(f'valid_proof(): {guess_hash[0:2]}')
-
-    return guess_hash[0:2] == '00'
-
-
 def proof_of_work():
     last_block = blockchain[-1]
     last_hash = hash_block(last_block)
@@ -278,21 +264,6 @@ def get_last_transaction_value():
     if len(blockchain) < 1:
         return None
     return blockchain[-1]
-
-
-def verify_transaction(transactiion):
-    """
-    Verify a transaction by checking whether the sender has enough / sufficient coins.
-
-    Arguments:
-        :transaction: The transaction that should be verified.
-    """
-    sender_balance = get_balance(transactiion.sender)
-
-    # print(f'verify_transcation::sender_balance:: {sender_balance}')
-    # print(f"verify_transcation::transcation_amount:: {transactiion['amount']}")
-
-    return sender_balance >= transactiion.amount
 
 
 def add_transaction(recipient, sender=owner, amount=1.0):
@@ -386,31 +357,6 @@ def print_blockchain_elements():
         print(f"\nPrinting the block: {block}")
     else:
         print("-" * 20)
-
-
-def verify_chain():
-    """ Verify the current blockchain and returns True / False """
-    for (index, block) in enumerate(blockchain):
-        # print(f"The index of the block: {index}")
-        # print(f"The details of the block: {block}")
-        if index == 0:
-            continue
-
-        if block.previous_hash != hash_block(blockchain[index - 1]):
-            return False
-
-        # We use [:-1] on transcations to ignore the last transcation which is the 'mining' transaction
-        if not valid_proof(block.transactions[:-1], block.previous_hash,
-                           block.proof):
-            print('Proof of Work is invalid!')
-            return False
-
-        return True
-
-
-def verify_transactions():
-    """ Verifies all the open transactions. """
-    return all([verify_transaction(tx) for tx in open_transactions])
 
 
 waiting_for_user_input = True
