@@ -3,7 +3,8 @@ from hash_util import hash_string_256, hash_block
 
 class Verification:
 
-    def valid_proof(self, transcations, last_hash, proof):
+    @staticmethod
+    def valid_proof(transcations, last_hash, proof):
         # Order in the Transactions is important here because we are going to do hashing
         # guess = (str(transcations) + str(last_hash) + str(proof)).encode()
         guess = (str([tx.to_ordered_dict() for tx in transcations]) +
@@ -16,7 +17,8 @@ class Verification:
 
         return guess_hash[0:2] == '00'
 
-    def verify_chain(self, blockchain):
+    @classmethod
+    def verify_chain(cls, blockchain):
         """ Verify the current blockchain and returns True / False """
         for (index, block) in enumerate(blockchain):
             # print(f"The index of the block: {index}")
@@ -28,14 +30,15 @@ class Verification:
                 return False
 
             # We use [:-1] on transcations to ignore the last transcation which is the 'mining' transaction
-            if not self.valid_proof(block.transactions[:-1],
-                                    block.previous_hash, block.proof):
+            if not cls.valid_proof(block.transactions[:-1],
+                                   block.previous_hash, block.proof):
                 print('Proof of Work is invalid!')
                 return False
 
             return True
 
-    def verify_transaction(self, transactiion, get_balance):
+    @staticmethod
+    def verify_transaction(transactiion, get_balance):
         """
         Verify a transaction by checking whether the sender has enough / sufficient coins.
 
@@ -49,9 +52,9 @@ class Verification:
 
         return sender_balance >= transactiion.amount
 
-    def verify_transactions(self, open_transactions, get_balance):
+    @classmethod
+    def verify_transactions(cls, open_transactions, get_balance):
         """ Verifies all the open transactions. """
         return all([
-            self.verify_transaction(tx, get_balance)
-            for tx in open_transactions
+            cls.verify_transaction(tx, get_balance) for tx in open_transactions
         ])
